@@ -1,4 +1,3 @@
-
 function SaveX(sErr)
     if (sErr) then
         s.err = sErr
@@ -18,8 +17,8 @@ function mysplit(inputstr, sep)
         end
         local t={} ; i=1
         for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                t[i] = str
-                i = i + 1
+            t[i] = str
+            i = i + 1
         end
         return t
 end
@@ -50,8 +49,8 @@ function dwn()
                     file.write(payload)
                     file.flush()
                 else
-                    if (string.find(payload,"\r\n\r\n") ~= nil) then
-                        file.write(string.sub(payload,string.find(payload,"\r\n\r\n") + 4))
+                    if (string.find(payload, "\r\n\r\n") ~= nil) then
+                        file.write(string.sub(payload,string.find(payload, "\r\n\r\n") + 4))
                         file.flush()
                         payloadFound = true
                     end
@@ -71,37 +70,37 @@ function dwn()
 
             end)
             conn:on("connection", function(conn)
-                conn:send("GET /"..s.path.."/uploads/"..id.."/"..v.." HTTP/1.0\r\n"..
-                      "Host: "..s.host.."\r\n"..
-                      "Connection: close\r\n"..
-                      "Accept-Charset: utf-8\r\n"..
-                      "Accept-Encoding: \r\n"..
-                      "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n".. 
+                conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
+                      "Host: " .. s.host .. "\r\n" ..
+                      "Connection: close\r\n" ..
+                      "Accept-Charset: utf-8\r\n" ..
+                      "Accept-Encoding: \r\n" ..
+                      "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n" ..
                       "Accept: */*\r\n\r\n")
             end)
-            conn:connect(80,s.host)
+            conn:connect(80, s.host)
     end
 
 end
 
-function FileList(sck,c)
+function FileList(sck, c)
     print "initialized"
     local nStart, nEnd = string.find(c, "\n\n")
     if (nEnde == nil) then
         nStart, nEnd = string.find(c, "\r\n\r\n")
     end
-    c = string.sub(c,nEnd+1)
-    print("length: "..string.len(c))
+    c = string.sub(c, nEnd + 1)
+    print("length: " .. string.len(c))
 
     data = mysplit(c, "\n") -- fill the field with filenames
     
     --for k,v in pairs(data) do
     n = 1
     v = data[n]
-        print("Filename: "..v)
+        print("Filename: " .. v)
         filename=v
         
-            file.remove(v);
+            file.remove(v)
             file.open(v, "w+")
 
             payloadFound = false
@@ -112,8 +111,8 @@ function FileList(sck,c)
                     file.write(payload)
                     file.flush()
                 else
-                    if (string.find(payload,"\r\n\r\n") ~= nil) then
-                        file.write(string.sub(payload,string.find(payload,"\r\n\r\n") + 4))
+                    if (string.find(payload, "\r\n\r\n") ~= nil) then
+                        file.write(string.sub(payload,string.find(payload, "\r\n\r\n") + 4))
                         file.flush()
                         payloadFound = true
                     end
@@ -132,12 +131,12 @@ function FileList(sck,c)
                 dwn()
             end)
             conn:on("connection", function(conn)
-                conn:send("GET /"..s.path.."/uploads/"..id.."/"..v.." HTTP/1.0\r\n"..
-                      "Host: "..s.host.."\r\n"..
-                      "Connection: close\r\n"..
-                      "Accept-Charset: utf-8\r\n"..
-                      "Accept-Encoding: \r\n"..
-                      "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n".. 
+                conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
+                      "Host: "..s.host.."\r\n" ..
+                      "Connection: close\r\n" ..
+                      "Accept-Charset: utf-8\r\n" ..
+                      "Accept-Encoding: \r\n" ..
+                      "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n" ..
                       "Accept: */*\r\n\r\n")
             end)
             conn:connect(80,s.host)
@@ -162,36 +161,35 @@ wifi_config =   {
 wifi.sta.config(wifi_config)
 wifi.sta.connect()
 
-iFail = 20 -- trying to connect to AP in 20sec, if not then reboot
+iFail = 60 -- trying to connect to AP in 60sec, if not then reboot
 tmr_waif_for_connect = tmr.create()
-tmr_waif_for_connect:alarm(1000, 1, function ( )
+tmr_waif_for_connect:alarm(1000, tmr.ALARM_SINGLE, function()
   iFail = iFail -1
   print(iFail)
   if (iFail == 0) then
-    SaveX("could not access "..s.ssid)
+    SaveX("could not access " .. s.ssid)
     node.restart()
-  end      
-  
+  end
 
   if wifi.sta.getip ( ) == nil then
     print(s.ssid..": "..iFail)
   else
-    print ("ip: " .. wifi.sta.getip ( ))
-    tmr.stop (1)
+    print("ip: " .. wifi.sta.getip())
+    tmr_waif_for_connect.unregister()
     -- get list of files
     sk=net.createConnection(net.TCP, 0)
     sk:on("connection",function(conn, payload)
-                sk:send("GET /".. s.path .."/node.php?id="..id.."&list"..
+                sk:send("GET /" .. s.path .. "/node.php?id=" .. id .. "&list" ..
                 " HTTP/1.1\r\n".. 
-                "Host: "..s.domain.."\r\n"..
-                "Accept: */*\r\n"..
-                "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua;)"..
-                "\r\n\r\n") 
+                "Host: ".. s.domain .. "\r\n" ..
+                "Accept: */*\r\n" ..
+                "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua;)" ..
+                "\r\n\r\n")
             end)
     sk:on("receive", FileList)
     
     --sGet = "GET /".. s.path .. " HTTP/1.1\r\nHost: " .. s.domain .. "\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n"
-    sk:connect(80,s.host) 
+    sk:connect(80, s.host)
     
   end
   collectgarbage()
@@ -199,4 +197,4 @@ tmr_waif_for_connect:alarm(1000, 1, function ( )
 end)
 
 
-print(collectgarbage("count").." kB used")
+print(collectgarbage("count") .. " kB used")
