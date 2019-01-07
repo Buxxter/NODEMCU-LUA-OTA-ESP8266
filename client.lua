@@ -142,9 +142,6 @@ function FileList(sck,c)
             end)
             conn:connect(80,s.host)
 
-
-
-
     --end
     collectgarbage()
 
@@ -155,12 +152,19 @@ data = {}
 filename=nil
 LoadX()
 
-wifi.setmode (wifi.STATION)
-wifi.sta.config(s.ssid, s.pwd)
-wifi.sta.autoconnect (1)
+wifi.setmode(wifi.STATION)
+wifi_config =   {   
+                    ssid = s.ssid, 
+                    pwd = s.pwd, 
+                    auto = true, 
+                    save = false,
+                }
+wifi.sta.config(wifi_config)
+wifi.sta.connect()
 
 iFail = 20 -- trying to connect to AP in 20sec, if not then reboot
-tmr.alarm (1, 1000, 1, function ( )
+tmr_waif_for_connect = tmr.create()
+tmr_waif_for_connect:alarm(1000, 1, function ( )
   iFail = iFail -1
   print(iFail)
   if (iFail == 0) then
@@ -195,5 +199,4 @@ tmr.alarm (1, 1000, 1, function ( )
 end)
 
 
-
- print(collectgarbage("count").." kB used")
+print(collectgarbage("count").." kB used")
