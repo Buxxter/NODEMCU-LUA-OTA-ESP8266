@@ -161,9 +161,9 @@ wifi_config =   {
 wifi.sta.config(wifi_config)
 wifi.sta.connect()
 
-iFail = 60 -- trying to connect to AP in 60sec, if not then reboot
+iFail = 12 -- trying to connect to AP in 60sec, if not then reboot
 tmr_waif_for_connect = tmr.create()
-tmr_waif_for_connect:alarm(1000, tmr.ALARM_SINGLE, function()
+tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
   iFail = iFail -1
   print(iFail)
   if (iFail == 0) then
@@ -171,11 +171,11 @@ tmr_waif_for_connect:alarm(1000, tmr.ALARM_SINGLE, function()
     node.restart()
   end
 
-  if wifi.sta.getip ( ) == nil then
-    print(s.ssid..": "..iFail)
+  if wifi.sta.getip() == nil then
+    print(s.ssid.. ": " .. iFail)
   else
     print("ip: " .. wifi.sta.getip())
-    tmr_waif_for_connect.unregister()
+    tmr_waif_for_connect:unregister()
     -- get list of files
     sk=net.createConnection(net.TCP, 0)
     sk:on("connection",function(conn, payload)
