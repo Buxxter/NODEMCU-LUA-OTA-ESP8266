@@ -9,28 +9,18 @@
 }
 
 div {
-	position: absolute;
-	margin: auto;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	width: 320px;
-	height: 274px;
+	padding: 5px;
 }
 
-form {
-	width: 320px;
-	text-align: center;
-	position: relative;
-}
+/* form {
+
+} */
 
 form fieldset {
 	background: white;
 	border: 0 none;
 	border-radius: 5px;
 	box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
-	padding: 20px 30px;
 	box-sizing: border-box;
 }
 
@@ -38,7 +28,7 @@ form input {
 	padding: 15px;
 	border: 1px solid #ccc;
 	border-radius: 3px;
-	margin-bottom: 10px;
+	margin-bottom: 3px;
 	width: 100%;
 	box-sizing: border-box;
 	font-family: montserrat;
@@ -46,16 +36,23 @@ form input {
 	font-size: 13px;
 }
 
+form input[type='checkbox'] {
+	width: 40px;
+	height: 40px;
+}
+
+form input[type='number'] {
+	width: 30%;
+}
+
 form .action-button {
-	width: 100px;
+	width: 100%;
 	background: #27AE60;
 	font-weight: bold;
 	color: white;
 	border: 0 none;
 	border-radius: 3px;
 	cursor: pointer;
-	padding: 10px 5px;
-	margin: 10px 5px;
 }
 
 form .action-button:hover, #msform .action-button:focus {
@@ -71,12 +68,17 @@ form .action-button:hover, #msform .action-button:focus {
 		<hr>
 		<br>
 		<form>
-			<input type="text" name="ssid" value='_ssid'> <br>
-			<input type="password" name="pwd" value='_pwd'><br>
-			<input type="text" name="host" value='_host'><br>
+			<input type="text" name="ssid" value='_ssid' class="txt"><br>
+			<input type="password" name="pwd" value='_pwd' class="txt"><br>
+			<input type="text" name="host" value='_host' class="txt"><br>
 			<input type="text" name="domain" value='_domain'><br>
 			<input type="text" name="path" value='_path'><br>
-			<input type="number" size=4 name="update" value='_update'><br>
+			<label>Check for updates every [minutes] (0 = disabled):</label>
+			<input type="number" size=4 name="update" value='60' width=30px><br>
+			<input type="checkbox" id="debug" name="debug" value="1" checked>
+			<label for="debug" style="font-size: 45px">Debug</label>
+			<br>
+
 			<input type="Submit" value="SAVE"><br>
 			<br>
 		</form>
