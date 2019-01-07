@@ -1,5 +1,5 @@
 function LoadX()
-    s = {ssid="", pwd="", host="", domain="", path="", err="",boot="",update=0}
+    s = {ssid="", pwd="", host="", domain="", path="", err="", boot="", update=0, debug="0"}
     if (file.open("s.txt","r")) then
         local sF = file.read()
         --print("setting: "..sF)
@@ -8,6 +8,13 @@ function LoadX()
             s[k] = v
             print(k .. ": " .. v)
         end
+        if debug == "1" and not file.open("debug") then
+            file.open("debug", "w")
+            file.close()
+        elseif debug ~= "1" then
+            file.remove("debug")
+        end
+
     end
 end
 
@@ -25,6 +32,10 @@ function SaveXY(sErr)
 end
 
 function update()
+    if not wifi.sta.getip() then
+        print("WiFi not connected")
+        return
+    end
     conn=net.createConnection(net.TCP, 0)
     conn:on("connection",function(conn, payload)
     conn:send("GET /"..s.path.."/node.php?id="..id.."&update"..
@@ -59,9 +70,10 @@ LoadX()
 if (s.host~="") then
     if (tonumber(s.update)>0) then
         tmr_update = tmr.create()
-        tmr_update:alarm (tonumber(s.update)*60000, 1, function()
+        tmr_update:alarm (tonumber(s.update)*60000, tmr.ALARM_SEMI, function()
                 print("checking for update")
                 update()
+                tmr_update:start()
             end)
     end
     if (s.boot~="") then
