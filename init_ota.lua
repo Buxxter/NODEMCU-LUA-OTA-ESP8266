@@ -8,10 +8,10 @@ function LoadX()
             s[k] = v
             print(k .. ": " .. v)
         end
-        if debug == "1" and not file.open("debug") then
+        if s.debug == "1" and not file.open("debug") then
             file.open("debug", "w")
             file.close()
-        elseif debug ~= "1" then
+        elseif s.debug ~= "1" then
             file.remove("debug")
         end
 
