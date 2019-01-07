@@ -12,9 +12,11 @@ if (isset($_GET['list'])) {
 	$sql = "SELECT * FROM data WHERE esp_id='$esp_id' ORDER BY `boot` DESC";
     $files = $db->query($sql);
 
+    echo "{start--\n";
     foreach ($files as $value) {
-    	echo $value[filename]."\n";
+        echo $value[filename]."\n";
     }
+    echo "--end}";
 
 }
 

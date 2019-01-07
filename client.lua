@@ -25,76 +25,89 @@ end
 
 function dwn()
     -- body
-    n = n + 1
-    v = data[n]
-    if v == nil then 
+    files_counter = files_counter + 1
+    if data[files_counter] == nil then
         --dofile(data[1]..".lc")
-        bootfile= string.gsub(data[1], '\.lua$','') --string.gsub(s, '\....$','')
+        bootfile = string.gsub(data[1], '\.lua$', '')
         s.boot = bootfile..".lc"
         SaveX("No error")
+        tmr_waif_for_connect:unregister()
+        collectgarbage()
         node.restart()
-    else 
-        print("Filename: "..v)
-        filename=v
-
-        file.remove(v)
-        file.open(v, "w+")
-
-        payloadFound = false
-        
-        -- TODO: Will change in upcoming releases:
-        conn = net.createConnection(net.TCP) -- <= from
-        -- conn = net.createConnection(net.TCP) -- <= to
-        -- See https://nodemcu.readthedocs.io/en/master/en/modules/net/#netcreateconnection
-        
-
-        conn:on("receive", function(conn, payload)
-
-            if (payloadFound == true) then
-                file.write(payload)
-                file.flush()
-            else
-                if (string.find(payload, "\r\n\r\n") ~= nil) then
-                    file.write(string.sub(payload,string.find(payload, "\r\n\r\n") + 4))
-                    file.flush()
-                    payloadFound = true
-                end
-            end
-
-            payload = nil
-            collectgarbage()
-        end)
-        conn:on("disconnection", function(conn) 
-            conn = nil
-            file.close()
-            ext = string.sub(v, -3)
-            if (ext == "lua") then
-                node.compile(filename)
-            end
-            dwn()
-
-        end)
-        conn:on("connection", function(conn)
-            conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
-                    "Host: " .. s.host .. "\r\n" ..
-                    "Connection: close\r\n" ..
-                    "Accept-Charset: utf-8\r\n" ..
-                    "Accept-Encoding: \r\n" ..
-                    "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n" ..
-                    "Accept: */*\r\n\r\n")
-        end)
-        conn:connect(80, s.host)
+        return
     end
+
+    filename = data[files_counter]
+    print("Filename: " .. filename)
+    
+    file.remove(filename)
+    file.remove(filename:gsub('\.lua$','\.lc'))
+    file.open(filename, "w+")
+
+    payloadFound = false
+    
+    -- TODO: Will change in upcoming releases:
+    conn = net.createConnection(net.TCP) -- <= from
+    -- conn = net.createConnection(net.TCP) -- <= to
+    -- See https://nodemcu.readthedocs.io/en/master/en/modules/net/#netcreateconnection
+    
+
+    conn:on("receive", function(conn, payload)
+
+        if (payloadFound == true) then
+            file.write(payload)
+            file.flush()
+        else
+            if (string.find(payload, "\r\n\r\n") ~= nil) then
+                file.write(string.sub(payload, string.find(payload, "\r\n\r\n") + 4))
+                file.flush()
+                payloadFound = true
+            end
+        end
+
+        payload = nil
+        collectgarbage()
+    end)
+
+    conn:on("disconnection", function(conn) 
+        conn = nil
+        file.close()
+        if (string.sub(filename, -4) == ".lua") then
+            node.compile(filename)
+        end
+        filename = nil
+        tmr_waif_for_connect:start()
+        collectgarbage()
+        return
+    end)
+    
+    conn:on("connection", function(conn)
+        conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
+                "Host: " .. s.host .. "\r\n" ..
+                "Connection: close\r\n" ..
+                "Accept-Charset: utf-8\r\n" ..
+                "Accept-Encoding: \r\n" ..
+                "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n" ..
+                "Accept: */*\r\n\r\n")
+    end)
+    
+    conn:connect(80, s.host)
 
 end
 
 function FileList(sck, c)
     print "initialized"
-    local nStart, nEnd = string.find(c, "\n\n")
-    if (nEnde == nil) then
-        nStart, nEnd = string.find(c, "\r\n\r\n")
+    -- local nStart, nEnd = string.find(c, "\n\n")
+    local nStart = c:find("{start--")
+    local nEnd = c:find("--end}")
+    print(nStart, nEnd)
+    print(c)
+
+    if nStart == nil or nEnd == nil then
+        print("Missing markers")
+        return
     end
-    c = string.sub(c, nEnd + 1)
+    c = c:sub(nStart+9, nEnd-1)
     print("length: " .. string.len(c))
 
     data = mysplit(c, "\n") -- fill the field with filenames
@@ -104,65 +117,18 @@ function FileList(sck, c)
         print(key, val)
     end
 
-    n = 1
-    v = data[n]
-    print("Filename: " .. v)
-    filename=v
-    
-    file.remove(v)
-    file.open(v, "w+")
-
-    payloadFound = false
-
-    -- TODO: Will change in upcoming releases:
-    conn = net.createConnection(net.TCP) -- <= from
-    -- conn = net.createConnection(net.TCP) -- <= to
-    -- See https://nodemcu.readthedocs.io/en/master/en/modules/net/#netcreateconnection
-
-    conn:on("receive", function(conn, payload)
-
-        if (payloadFound == true) then
-            file.write(payload)
-            file.flush()
-        else
-            if (string.find(payload, "\r\n\r\n") ~= nil) then
-                file.write(string.sub(payload,string.find(payload, "\r\n\r\n") + 4))
-                file.flush()
-                payloadFound = true
-            end
-        end
-
-        payload = nil
-        collectgarbage()
-    end)
-    conn:on("disconnection", function(conn) 
-        conn = nil
-        file.close()
-        ext = string.sub(v, -3)
-        if (ext == "lua") then
-            node.compile(v)
-        end
-        dwn()
-    end)
-    conn:on("connection", function(conn)
-        conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
-                "Host: "..s.host.."\r\n" ..
-                "Connection: close\r\n" ..
-                "Accept-Charset: utf-8\r\n" ..
-                "Accept-Encoding: \r\n" ..
-                "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua; Windows NT 5.1)\r\n" ..
-                "Accept: */*\r\n\r\n")
-    end)
-    conn:connect(80, s.host)
-
+    filename = nil
+    file_counter = 0
+    tmr_get_file = tmr.create()
+    tmr_get_file:alarm(1000, tmr.ALARM_SEMI, dwn)
     --end
     collectgarbage()
-
 end
 
 print("fetch lua..")
 data = {}
-filename=nil
+filename = nil
+files_counter = 0
 LoadX()
 
 wifi.setmode(wifi.STATION)
