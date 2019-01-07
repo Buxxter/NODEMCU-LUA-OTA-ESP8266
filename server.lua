@@ -20,6 +20,16 @@ cfg.ssid = "WiFi_to_Config"
 wifi.ap.config(cfg)
 --dofile("dns-liar.lua")
 
+function decodeURI(s)
+  -- https://gist.github.com/cgwxyz/6053d51e8d7134dd2e30
+  if(s) then
+    s = string.gsub(s, "+", " ")
+    s = string.gsub(s, '%%(%x%x)', 
+      function (hex) return string.char(tonumber(hex,16)) end )
+  end
+  return s
+end
+
 srv = net.createServer(net.TCP)
 srv:listen(80, function(conn)
   local responseBytes = 0
@@ -27,7 +37,7 @@ srv:listen(80, function(conn)
   local url = ""
   local vars = ""
   conn:on("receive",function(conn, payload)
-    _, _, method, url, vars = string.find(payload, "([A-Z]+) /([^?]*)%??(.*) HTTP")
+    _, _, method, url, vars = string.find(decodeURI(payload), "([A-Z]+) /([^?]*)%??(.*) HTTP")
     print(method, url, vars)
 
     print ("|"..vars.."|")
@@ -35,7 +45,7 @@ srv:listen(80, function(conn)
             for k, v in string.gmatch(vars, "(%w+)=([^&]*)&*") do
                 s[k],n = string.gsub(v,"%%2F","/")
                 print(k .. " = " .. s[k])
-              end
+            end
         SaveX()
     end
     if url == "favicon.ico" then
