@@ -24,10 +24,8 @@ function SaveXY(sErr)
     collectgarbage()
 end
 
-
-
 function update()
-conn=net.createConnection(net.TCP, 0)
+    conn=net.createConnection(net.TCP, 0)
     conn:on("connection",function(conn, payload)
     conn:send("GET /"..s.path.."/node.php?id="..id.."&update"..
                 " HTTP/1.1\r\n".. 
@@ -59,9 +57,9 @@ print(collectgarbage("count").." kB used")
 LoadX()
 
 if (s.host~="") then
---if (s.host and s.domain and s.path) then
     if (tonumber(s.update)>0) then
-        tmr.alarm (0, tonumber(s.update)*60000, 1, function()
+        tmr_update = tmr.create()
+        tmr_update:alarm (tonumber(s.update)*60000, 1, function()
                 print("checking for update")
                 update()
             end)
@@ -73,4 +71,4 @@ if (s.host~="") then
     end
 else
     dofile("server.lua")   
-end 
+end
