@@ -77,6 +77,7 @@ print ("nodeID is: "..id)
 print(collectgarbage("count").." kB used")
 LoadX()
 
+
 if (s.host and s.host~="") then
     if (tonumber(s.update)>0) then
         tmr_update = tmr.create()
@@ -87,6 +88,18 @@ if (s.host and s.host~="") then
             end)
     end
     if (s.boot and s.boot~="") then
+        -- Remove if wifi configuren in s.boot
+        -- TODO: make good wifi connection script for this
+        wifi.setmode(wifi.STATION)
+        wifi_config =   {   
+                            ssid = s.ssid, 
+                            pwd = s.pwd, 
+                            auto = true, 
+                            save = false,
+                        }
+        wifi.sta.config(wifi_config)
+        wifi.sta.connect()
+
         load_lib(s.boot)
     else    
         load_lib("client")
