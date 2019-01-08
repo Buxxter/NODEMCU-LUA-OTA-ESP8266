@@ -3,36 +3,50 @@ require("config.php");
 $chipid = $_GET['id'];
 
 if (isset($_GET['list'])) {
-	$sql = "SELECT * FROM esp WHERE chip_id='$chipid'";
+	$sql = "
+            select
+                data.filename
+            from esp as esp
+                join data as data on esp.id = data.esp_id
+            where 1 = 1
+                and esp.chip_id = :chip_id
+                and esp.`update` = 1
+            order by data.boot DESC;
+            ";
     $sth = $db->prepare($sql);
+    $sth->bindParam(':chip_id', $chipid, PDO::PARAM_STR);
     $sth->execute();
-    $esp_id_fetch = $sth->fetch(PDO::FETCH_ASSOC);
-    $esp_id = $esp_id_fetch[id];
+    $sth->bindColumn('filename', $file);
 
-	$sql = "SELECT * FROM data WHERE esp_id='$esp_id' ORDER BY `boot` DESC";
-    $files = $db->query($sql);
-
-    foreach ($files as $value) {
-    	echo $value[filename]."\n";
+    echo "{start--\n";
+    while ($row = $sth->fetch(PDO::FETCH_BOUND)) {
+        echo "$file\n";
     }
+    echo "--end}";
+
 
 }
 
 if (isset($_GET['update'])) {
-	$sql = "SELECT * FROM esp WHERE chip_id='$chipid'";
+	$sql = "SELECT * FROM esp WHERE chip_id = :chip_id";
     $sth = $db->prepare($sql);
+    $sth->bindParam(':chip_id', $chipid, PDO::PARAM_STR);
     $sth->execute();
     $fetch = $sth->fetch(PDO::FETCH_ASSOC);
     $result = $fetch[update];
 
     if ($result == 1) {
         echo "UPDATE";
-        $sql = "UPDATE `esp` SET `update`=0 WHERE chip_id=$chipid";
-        $db->exec($sql);
+        if ($_GET['update'] == 1) {
+            $sql = "UPDATE `esp` SET `update`=0, update_dt=now() WHERE chip_id=:chip_id";
+            $sth = $db->prepare($sql);
+            $sth->execute(array(':chip_id' => $chipid));
+        }
     } else {echo "";} 
 
     $sql = "UPDATE `esp` SET heartbeat=now() WHERE chip_id=$chipid";
-    $db->exec($sql);
+    $sth = $db->prepare($sql);
+    $sth->execute(array(':chip_id' => $chipid));
 
 
 }
