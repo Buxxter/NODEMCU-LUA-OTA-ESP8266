@@ -1,3 +1,13 @@
+function load_lib(fname)
+    if file.open(fname .. ".lc") then
+        file.close()
+        dofile(fname .. ".lc")
+    else
+        dofile(fname .. ".lua")
+    end
+    collectgarbage()
+end
+
 function LoadX()
     s = {ssid="", pwd="", host="", domain="", path="", err="", boot="", update=0, debug="0"}
     if (file.open("s.txt","r")) then
@@ -67,7 +77,7 @@ print ("nodeID is: "..id)
 print(collectgarbage("count").." kB used")
 LoadX()
 
-if (s.host~="") then
+if (s.host and s.host~="") then
     if (tonumber(s.update)>0) then
         tmr_update = tmr.create()
         tmr_update:alarm (tonumber(s.update)*60000, tmr.ALARM_SEMI, function()
@@ -76,11 +86,11 @@ if (s.host~="") then
                 tmr_update:start()
             end)
     end
-    if (s.boot~="") then
-        dofile(s.boot)
+    if (s.boot and s.boot~="") then
+        load_lib(s.boot)
     else    
-        dofile("client.lua")   
+        load_lib("client")
     end
 else
-    dofile("server.lua")   
+    load_lib("server")
 end

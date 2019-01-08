@@ -254,7 +254,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
     
 
 <?php
-    if (isset($_GET[newnode]) || isset($_GET[edit]) ) {
+    if (isset($_GET['newnode']) || isset($_GET[edit]) ) {
 
       if (isset($_GET[edit])) {
 
@@ -318,7 +318,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
               </div>
             </div>";
 
-            if (isset($_GET[edit])) { echo "<input type='hidden' value=$nodeIdUpd name='edit' />";}
+            if (isset($_GET['edit'])) { echo "<input type='hidden' value=$nodeIdUpd name='edit' />";}
             echo "
 
         </form>
@@ -327,7 +327,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 ?>
 
 <?php
-    if (isset($_GET[editor])) {
+    if (isset($_GET['editor'])) {
 
         $fileId = $_GET['editor'];
   

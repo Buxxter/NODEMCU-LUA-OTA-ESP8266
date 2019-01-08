@@ -1,3 +1,8 @@
+
+function write(str)
+    uart.write(0, str)
+end
+
 function SaveX(sErr)
     if (sErr) then
         s.err = sErr
@@ -23,22 +28,42 @@ function mysplit(inputstr, sep)
         return t
 end
 
+function update_state()
+    -- TODO: update file only on 200 OK on:disconnect
+    write("Sending updated state...")
+    conn=net.createConnection(net.TCP, 0)
+    conn:on("connection",function(conn, payload)
+    conn:send("GET /"..s.path.."/node.php?id="..id.."&update=1"..
+                " HTTP/1.1\r\n".. 
+                "Host: "..s.domain.."\r\n"..
+                "Accept: */*\r\n"..
+                "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua;)"..
+                "\r\n\r\n") 
+            end)
+
+    conn:on("receive", function(conn, payload)
+        print("Done")
+        SaveX("No error")
+        print("All files saved\nBootfile: " .. s.boot .. "\nReboot")
+        collectgarbage()
+        node.restart()
+    end)
+    conn:connect(80,s.host)
+end
+
 function dwn()
     -- body
     files_counter = files_counter + 1
     if data[files_counter] == nil then
-        --dofile(data[1]..".lc")
         bootfile = string.gsub(data[1], '\.lua$', '')
-        s.boot = bootfile..".lc"
-        SaveX("No error")
-        tmr_waif_for_connect:unregister()
-        collectgarbage()
-        node.restart()
+        s.boot = bootfile --..".lc"
+        tmr_get_file:unregister()
+        update_state()
         return
     end
 
     filename = data[files_counter]
-    print("Filename: " .. filename)
+    write("Filename: " .. filename .. "...")
     
     file.remove(filename)
     file.remove(filename:gsub('\.lua$','\.lc'))
@@ -71,12 +96,13 @@ function dwn()
 
     conn:on("disconnection", function(conn) 
         conn = nil
+        print("Done")
         file.close()
         -- if (string.sub(filename, -4) == ".lua") then
         --     node.compile(filename)
         -- end
         filename = nil
-        tmr_waif_for_connect:start()
+        tmr_get_file:start()
         collectgarbage()
         return
     end)
@@ -96,32 +122,30 @@ function dwn()
 end
 
 function FileList(sck, c)
-    print("Check for update manifest")
+    write("Check for update manifest...")
     
     local nStart = c:find("{start--")
     local nEnd = c:find("--end}")
-    print(nStart, nEnd)
-    print(c)
-
+    
     if nStart == nil or nEnd == nil then
         print("Missing markers")
         return
     end
     c = c:sub(nStart+9, nEnd-1)
-    print("length: " .. string.len(c))
-
+    
     data = mysplit(c, "\n") -- fill the field with filenames
     
-    print("Got filelist:")
-    for key, val in pairs(data) do  -- Table iteration.
-        print(key, val)
-    end
-
     filename = nil
     file_counter = 0
     if #data ~= 0 then
+        print("Got filelist:")
+        for key, val in pairs(data) do  -- Table iteration.
+            print(key, val)
+        end
         tmr_get_file = tmr.create()
         tmr_get_file:alarm(1000, tmr.ALARM_SEMI, dwn)
+    else
+        print("nothing to update")
     end
 
     collectgarbage()
