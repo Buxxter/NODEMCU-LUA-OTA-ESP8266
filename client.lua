@@ -72,9 +72,9 @@ function dwn()
     conn:on("disconnection", function(conn) 
         conn = nil
         file.close()
-        if (string.sub(filename, -4) == ".lua") then
-            node.compile(filename)
-        end
+        -- if (string.sub(filename, -4) == ".lua") then
+        --     node.compile(filename)
+        -- end
         filename = nil
         tmr_waif_for_connect:start()
         collectgarbage()
@@ -82,7 +82,7 @@ function dwn()
     end)
     
     conn:on("connection", function(conn)
-        conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. v .. " HTTP/1.0\r\n" ..
+        conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. filename .. " HTTP/1.0\r\n" ..
                 "Host: " .. s.host .. "\r\n" ..
                 "Connection: close\r\n" ..
                 "Accept-Charset: utf-8\r\n" ..
@@ -96,8 +96,8 @@ function dwn()
 end
 
 function FileList(sck, c)
-    print "initialized"
-    -- local nStart, nEnd = string.find(c, "\n\n")
+    print("Check for update manifest")
+    
     local nStart = c:find("{start--")
     local nEnd = c:find("--end}")
     print(nStart, nEnd)
@@ -119,9 +119,11 @@ function FileList(sck, c)
 
     filename = nil
     file_counter = 0
-    tmr_get_file = tmr.create()
-    tmr_get_file:alarm(1000, tmr.ALARM_SEMI, dwn)
-    --end
+    if #data ~= 0 then
+        tmr_get_file = tmr.create()
+        tmr_get_file:alarm(1000, tmr.ALARM_SEMI, dwn)
+    end
+
     collectgarbage()
 end
 
