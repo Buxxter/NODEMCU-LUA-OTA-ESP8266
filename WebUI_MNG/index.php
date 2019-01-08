@@ -8,15 +8,16 @@ $path = "uploads/"; // Upload directory
 $count = 0;
 if(isset($_GET) and $_SERVER['REQUEST_METHOD'] == "GET"){
 
-  $nodeIdDel = $_GET['del'];
-  
+  $nodeIdDel = '';
   if (isset($_GET['del'])) {
+    $nodeIdDel = $_GET['del'];
     $sql = "DELETE FROM esp WHERE id=$nodeIdDel";
     $db->exec($sql);
   }
-  $nodeIdUpd = $_GET['upd'];
   
+  $nodeIdUpd = '';
   if (isset($_GET['upd'])) {
+    $nodeIdUpd = $_GET['upd'];
     $sql = "SELECT * FROM esp WHERE id=$nodeIdUpd";
     $sth = $db->prepare($sql);
     $sth->execute();
@@ -176,7 +177,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 
     <div class="container">
       <?php
-        if (isset($_GET[files])) {
+        if (isset($_GET['files'])) {
 
           $fileId = $_GET[files];
 
@@ -254,7 +255,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
     
 
 <?php
-    if (isset($_GET['newnode']) || isset($_GET[edit]) ) {
+    if (isset($_GET['newnode']) || isset($_GET['edit']) ) {
 
       if (isset($_GET[edit])) {
 

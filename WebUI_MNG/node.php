@@ -33,7 +33,7 @@ if (isset($_GET['update'])) {
     $sth->bindParam(':chip_id', $chipid, PDO::PARAM_STR);
     $sth->execute();
     $fetch = $sth->fetch(PDO::FETCH_ASSOC);
-    $result = $fetch[update];
+    $result = $fetch['update'];
 
     if ($result == 1) {
         echo "UPDATE";
