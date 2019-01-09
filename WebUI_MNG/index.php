@@ -23,7 +23,7 @@ if(isset($_GET) and $_SERVER['REQUEST_METHOD'] == "GET"){
     $sth->execute();
     $result = $sth->fetch(PDO::FETCH_ASSOC);
 
-    if ($result[update] == 1) {$val = 0;} else {$val = 1;}
+    if ($result['update'] == 1) {$val = 0;} else {$val = 1;}
 
     $sql = "UPDATE esp SET `update`='$val' WHERE id=$nodeIdUpd";
     $db->exec($sql);
@@ -41,8 +41,8 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
       $sth->execute();
       $result = $sth->fetch(PDO::FETCH_ASSOC);
 
-      $r_folder = $result[folder];
-      $r_filename = $result[filename];
+      $r_folder = $result['folder'];
+      $r_filename = $result['filename'];
 
       $fn = "uploads/".$r_folder."/".$r_filename;
       $file = fopen($fn, "w"); 
@@ -179,10 +179,10 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
       <?php
         if (isset($_GET['files'])) {
 
-          $fileId = $_GET[files];
+          $fileId = $_GET['files'];
 
-          if (isset($_GET[boot])) {
-                  $file_id = $_GET[boot];
+          if (isset($_GET['boot'])) {
+                  $file_id = $_GET['boot'];
 
                   $sql = "SELECT * FROM data WHERE esp_id=$fileId";
                   $files = $db->query($sql);
@@ -197,8 +197,8 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
                   }
           }
 
-          if (isset($_GET[delfile])) {
-                  $file_del = $_GET[delfile];
+          if (isset($_GET['delfile'])) {
+                  $file_del = $_GET['delfile'];
                   
                   $sql = "DELETE FROM data WHERE id=$file_del";
                   $db->exec($sql);
@@ -244,7 +244,15 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
                 foreach ($files as $value) {
 
                     echo "<tr>";
-                    echo "<th scope='row'>$value[id]</th><td>$value[filename]</td><td>$value[folder]</td><td>$value[boot]</td><td><a href='?files=$value[esp_id]&delfile=$value[id]' class='btn-sm btn-danger' role='button'>Delete</a>&nbsp;<a href='?files=$value[esp_id]&boot=$value[id]' class='btn-sm btn-success' role='button'>Boot Flag</a>&nbsp;<a href='?editor=$value[id]' class='btn-sm btn-primary' role='button'>Edit</a></td>";
+                    echo "<th scope='row'>$value[id]</th>
+                          <td>$value[filename]</td>
+                          <td>$value[folder]</td>
+                          <td>$value[boot]</td>
+                          <td>
+                            <a href='?files=$value[esp_id]&delfile=$value[id]' class='btn-sm btn-danger' role='button'>Delete</a>&nbsp;
+                            <a href='?files=$value[esp_id]&boot=$value[id]' class='btn-sm btn-success' role='button'>Boot Flag</a>&nbsp;
+                            <a href='?editor=$value[id]' class='btn-sm btn-primary' role='button'>Edit</a>
+                          </td>";
                     echo "<tr>";
                   }
             echo "  </tbody>
@@ -257,7 +265,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 <?php
     if (isset($_GET['newnode']) || isset($_GET['edit']) ) {
 
-      if (isset($_GET[edit])) {
+      if (isset($_GET['edit'])) {
 
         $nodeIdUpd = $_GET['edit'];
   
@@ -266,9 +274,9 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
         $sth->execute();
         $result = $sth->fetch(PDO::FETCH_ASSOC);
 
-        $r_name = $result[name];
-        $r_desc = $result[description];
-        $r_chipid = $result[chip_id];
+        $r_name = $result['name'];
+        $r_desc = $result['description'];
+        $r_chipid = $result['chip_id'];
       }
 
 
@@ -337,9 +345,9 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
         $sth->execute();
         $result = $sth->fetch(PDO::FETCH_ASSOC);
 
-        $r_folder = $result[folder];
-        $r_filename = $result[filename];
-        $r_espid = $result[esp_id];
+        $r_folder = $result['folder'];
+        $r_filename = $result['filename'];
+        $r_espid = $result['esp_id'];
 
         $fn = "uploads/".$r_folder."/".$r_filename;
         $file = fopen($fn, "a+"); 
