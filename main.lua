@@ -1,0 +1,1 @@
+print('This is an init script for your project with OTA-update')

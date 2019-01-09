@@ -187,11 +187,11 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
                   $sql = "SELECT * FROM data WHERE esp_id=$fileId";
                   $files = $db->query($sql);
                   foreach ($files as $value) {
-                      if ($file_id == $value[id]) {
-                          $sql = "UPDATE data SET `boot`=1 WHERE id=$value[id]";
+                      if ($file_id == $value['id']) {
+                          $sql = "UPDATE data SET `boot`=1 WHERE id=$value['id']";
                           $db->exec($sql);
                       } else {
-                          $sql = "UPDATE data SET `boot`=0 WHERE id=$value[id]";
+                          $sql = "UPDATE data SET `boot`=0 WHERE id=$value['id']";
                           $db->exec($sql);
                       }
                   }

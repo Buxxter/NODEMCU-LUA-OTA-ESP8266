@@ -102,8 +102,8 @@ if (s.host and s.host~="") then
 
         load_lib(s.boot)
     else    
-        load_lib("client")
+        load_lib("ota_client")
     end
 else
-    load_lib("server")
+    load_lib("ota_server")
 end
