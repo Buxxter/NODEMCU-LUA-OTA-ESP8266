@@ -66,7 +66,7 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
         $chip_id_fetch = $sth->fetch(PDO::FETCH_ASSOC);
         $chipid = $chip_id_fetch[chip_id];
 
-        } else {
+      } else {
 
         if (isset($_POST['edit'])) {
             $sql = "UPDATE esp SET `name` = '$nodeName', `description` = '$nodeDesc', `chip_id` = '$chipid' WHERE id = $nodeEdit";
@@ -187,11 +187,12 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
                   $sql = "SELECT * FROM data WHERE esp_id=$fileId";
                   $files = $db->query($sql);
                   foreach ($files as $value) {
+                      $file_db_id = $value['id'];
                       if ($file_id == $value['id']) {
-                          $sql = "UPDATE data SET `boot`=1 WHERE id=$value['id']";
+                          $sql = "UPDATE data SET `boot`=1 WHERE id=$file_db_id";
                           $db->exec($sql);
                       } else {
-                          $sql = "UPDATE data SET `boot`=0 WHERE id=$value['id']";
+                          $sql = "UPDATE data SET `boot`=0 WHERE id=$file_db_id";
                           $db->exec($sql);
                       }
                   }
