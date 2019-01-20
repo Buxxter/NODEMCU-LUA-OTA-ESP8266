@@ -4,7 +4,9 @@
     $username = "esp_mng"; 
     $password = "1234567"; 
     $host = "localhost"; 
-    $dbname = "esp"; 
+    $dbname = "esp";
+
+    $updates_dir = dirname($_SERVER['SCRIPT_FILENAME']) . "/uploads";
     
     $options = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'); 
     try { $db = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8", $username, $password, $options); } 

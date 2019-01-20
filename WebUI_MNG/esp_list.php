@@ -33,7 +33,12 @@
             <td>$upd</td>
             <td>$esp[heartbeat]</td>
             <td>$esp[update_dt]</td>
-            <td><a href='?edit=$esp[id]' class='btn-sm btn-info' role='button'>Edit</a>&nbsp;<a href='?upd=$esp[id]' class='btn-sm btn-warning' role='button'>Update</a>&nbsp;<a href='?del=$esp[id]' class='btn-sm btn-danger' role='button'>Delete</a>&nbsp;<a href='?files=$esp[id]' class='btn-sm btn-success' role='button'>Files</a></td>";
+            <td>
+              <a href='?edit=$esp[id]' class='btn-sm btn-info' role='button'>Edit</a>&nbsp;
+              <a href='?upd=$esp[id]' class='btn-sm btn-warning' role='button'>Update</a>&nbsp;
+              <a href='?update_from_fs=$esp[id]' class='btn-sm btn-warning' role='button'>Files from FS</a>&nbsp;
+              <a href='?del=$esp[id]' class='btn-sm btn-danger' role='button'>Delete</a>&nbsp;
+              <a href='?files=$esp[id]' class='btn-sm btn-success' role='button'>Files</a></td>";
 		echo "<tr>";
 
 	}

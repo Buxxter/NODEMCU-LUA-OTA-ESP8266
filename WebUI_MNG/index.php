@@ -200,7 +200,14 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 
           if (isset($_GET['delfile'])) {
                   $file_del = $_GET['delfile'];
-                  
+                  $sql = "SELECT filename, folder FROM esp.data WHERE id = :file_id;";
+                  $sth = $db->prepare($sql);
+                  $sth->bindParam(':file_id', $file_del, PDO::PARAM_STR);
+                  $sth->execute();
+                  while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
+                    unlink("$updates_dir/" . $row['folder'] . "/" . $row['filename']);
+                  }
+
                   $sql = "DELETE FROM data WHERE id=$file_del";
                   $db->exec($sql);
           }
@@ -334,6 +341,76 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
         </form>
 </div>";
 }
+?>
+
+<?php
+    if (isset($_GET['update_from_fs'])) {
+      $chip_db_id = $_GET['update_from_fs'];
+      $sql = "SELECT chip_id FROM esp.esp where id=:id";
+      $sth = $db->prepare($sql);
+      $sth->bindParam(':id', $chip_db_id, PDO::PARAM_STR);
+//    TODO Add Count=1 check
+      $sth->execute();
+      $chip_id = $sth->fetchColumn();
+
+      // запоминаем загрузочный файл
+      $sql = "SELECT 
+                  data.filename
+              FROM esp as esp
+                  JOIN data as data on esp.id = data.esp_id
+              WHERE 1 = 1
+                  AND esp.id = :chip_id
+                  AND data.boot = 1
+              ORDER BY data.boot DESC;";
+      $sth = $db->prepare($sql);
+      $sth->bindParam(':chip_id', $chip_db_id, PDO::PARAM_STR);
+      $sth->execute();
+      $db_boot = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
+      $was_boot = count($db_boot) == 1;
+
+      // получаем список файлов в каталоге
+      $files_in_fs = glob("$updates_dir/$chip_id/*.*");
+
+      // грохаем все, что есть в БД
+      $sql = "DELETE FROM esp.data WHERE esp_id = :esp_id;";
+      $sth = $db->prepare($sql);
+      $sth->bindParam(':esp_id', $chip_db_id, PDO::PARAM_STR);
+      $sth->execute();
+
+      // втыкаем в БД файлы
+      $sql = "INSERT INTO esp.data (esp_id, folder, filename, boot)
+                SELECT
+                    esp.id as esp_id,
+                    esp.chip_id as folder,
+                    :file_name as filename,
+                    0 as boot
+                FROM esp.esp
+                WHERE esp.id = :esp_id;";
+      $sth = $db->prepare($sql);
+      $sth->bindParam(':esp_id', $chip_db_id, PDO::PARAM_STR);
+
+      foreach ($files_in_fs as $filename) {
+        $bname = basename($filename);
+        $sth->bindParam(':file_name', $bname, PDO::PARAM_STR);
+        $sth->execute();
+      }
+
+      // выставляем флаг загрузки на файле, на котором он был раньше.
+      // если этого файла больше нет, попробуем воткнуть флаг на файл main.lua
+      $sql_update_boot = "UPDATE esp.data
+                      SET boot = 1
+                  WHERE 1 = 1 
+                      AND esp_id = :chip_id
+                      AND filename = :boot_fname;";
+      $sth = $db->prepare($sql_update_boot);
+      $sth->bindParam(':chip_id', $chip_db_id, PDO::PARAM_STR);
+
+      $boot_filename = ($was_boot and in_array("$updates_dir/$chip_id/$db_boot[0]", $files_in_fs)) ? $db_boot[0] : "main.lua";
+
+      $sth->bindParam(':boot_fname', $boot_filename, PDO::PARAM_STR);
+      $sth->execute();
+    }
+
 ?>
 
 <?php
