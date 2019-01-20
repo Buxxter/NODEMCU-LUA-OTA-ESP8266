@@ -87,7 +87,7 @@ if (s.host and s.host~="") then
                 tmr_update:start()
             end)
     end
-    if (s.boot and s.boot~="") then
+    if (s.boot and s.boot~="" and s.boot~="init_ota") then
         -- Remove if wifi configuren in s.boot
         -- TODO: make good wifi connection script for this
         wifi.setmode(wifi.STATION)
