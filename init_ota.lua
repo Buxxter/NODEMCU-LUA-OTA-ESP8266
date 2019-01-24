@@ -86,6 +86,7 @@ if (s.host and s.host~="") then
                 update()
                 tmr_update:start()
             end)
+        update()
     end
     if (s.boot and s.boot~="" and s.boot~="init_ota") then
         -- Remove if wifi configuren in s.boot
