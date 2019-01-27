@@ -61,6 +61,7 @@ function update()
             s.boot=nil
             SaveXY()
             node.restart()
+            return
         end
         
         payload = nil
