@@ -3,19 +3,6 @@ function write(str)
     uart.write(0, str)
 end
 
-function SaveX(sErr)
-    if (sErr) then
-        s.err = sErr
-    end
-    file.remove("s.txt")
-    file.open("s.txt","w+")
-    for k, v in pairs(s) do
-        file.writeline(k .. "=" .. v)
-    end                
-    file.close()
-    collectgarbage()
-end
-
 function mysplit(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -43,7 +30,7 @@ function update_state()
 
     conn:on("receive", function(conn, payload)
         print("Done")
-        SaveX("No error")
+        SaveXY("No error")
         print("All files saved\nBootfile: " .. s.boot .. "\nReboot")
         collectgarbage()
         node.restart()
@@ -146,6 +133,8 @@ function FileList(sck, c)
         tmr_get_file:alarm(1000, tmr.ALARM_SEMI, dwn)
     else
         print("nothing to update")
+        node.restart()
+        return
     end
 
     collectgarbage()
@@ -170,10 +159,10 @@ wifi.sta.connect()
 iFail = 12 -- trying to connect to AP in 60sec, if not then reboot
 tmr_waif_for_connect = tmr.create()
 tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
-  iFail = iFail -1
+  iFail = iFail - 1
   print(iFail)
   if (iFail == 0) then
-    SaveX("could not access " .. s.ssid)
+    SaveXY("could not access " .. s.ssid)
     node.restart()
   end
 
@@ -184,10 +173,7 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
     tmr_waif_for_connect:unregister()
     -- get list of files
     
-    -- TODO: Will change in upcoming releases:
-    sk = net.createConnection(net.TCP) -- <= from
-    -- sk = net.createConnection(net.TCP) -- <= to
-    -- See https://nodemcu.readthedocs.io/en/master/en/modules/net/#netcreateconnection
+    sk = net.createConnection()
     
     sk:on("connection",function(conn, payload)
                 sk:send("GET /" .. s.path .. "/node.php?id=" .. id .. "&list" ..
@@ -198,7 +184,22 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
                 "\r\n\r\n")
             end)
     sk:on("receive", FileList)
-    
+
+    sk:on("reconnection", function (conn, err_code)
+        print("Error (" .. err_code .. ") connecting " .. s.host)
+        iFail = iFail - 1
+        if (iFail == 0) then
+            SaveXY("connection error (code " .. err_code .. ")")
+            node.restart()
+          end
+        return
+    end)
+
+    -- TODO
+    -- Add sk:on("disconnection") and sk:on("reconnection")
+    -- to catch connection errors
+
+    iFail = 12
     --sGet = "GET /".. s.path .. " HTTP/1.1\r\nHost: " .. s.domain .. "\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n"
     sk:connect(80, s.host)
     

@@ -1,11 +1,26 @@
+function run()
+    print("Starting...")
+    if file.open("ota_init.lc") then
+        file.close()
+        dofile("ota_init.lc")
+    else
+        dofile("ota_init.lua")
+    end
+    run = nil
+    collectgarbage()
+end
+
+debug = function (...)
+    return
+end
+
 if file.open("debug") then
     print("Debug delay for 3s...")
-    tmr.delay(3000000)
-    print("finished")
-end
-if file.open("init_ota.lc") then
-    file.close()
-    dofile("init_ota.lc")
+    debug = function (...)
+        print(...)
+    end
+
+    tmr.create():alarm(3000, tmr.ALARM_SINGLE, run)
 else
-    dofile("init_ota.lua")
+    run()
 end

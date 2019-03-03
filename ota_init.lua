@@ -8,6 +8,16 @@ function load_lib(fname)
     collectgarbage()
 end
 
+function feed_update_wdt()
+    s.reboots_to_update = 10
+    SaveXY()
+end
+
+function update_wdt_off()
+    s.reboots_to_update = nil
+    SaveXY()
+end
+
 function LoadX()
     s = {ssid="", pwd="", host="", domain="", path="", err="", boot="", update=0, debug="0"}
     if (file.open("s.txt","r")) then
@@ -59,7 +69,8 @@ function update()
     conn:on("receive", function(conn, payload)
         if string.find(payload, "UPDATE")~=nil then 
             s.boot=nil
-            SaveXY()
+            feed_update_wdt()
+            -- SaveXY()
             node.restart()
         end
         
@@ -77,6 +88,10 @@ print ("nodeID is: "..id)
 print(collectgarbage("count").." kB used")
 LoadX()
 
+if s.reboots_to_update then 
+    s.reboots_to_update = s.reboots_to_update - 1
+    SaveXY()
+end
 
 if (s.host and s.host~="") then
     if (tonumber(s.update)>0) then
@@ -87,7 +102,7 @@ if (s.host and s.host~="") then
                 tmr_update:start()
             end)
     end
-    if (s.boot and s.boot~="") then
+    if (s.boot and s.boot~="" and s.boot~="init_ota" and (s.reboots_to_update == nil or s.reboots_to_update > 0)) then
         -- Remove if wifi configuren in s.boot
         -- TODO: make good wifi connection script for this
         wifi.setmode(wifi.STATION)
@@ -101,7 +116,8 @@ if (s.host and s.host~="") then
         wifi.sta.connect()
 
         load_lib(s.boot)
-    else    
+    else
+        feed_update_wdt()
         load_lib("ota_client")
     end
 else
