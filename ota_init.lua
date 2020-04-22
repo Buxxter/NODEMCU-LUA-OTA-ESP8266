@@ -50,7 +50,7 @@ if (ota_lib.host and ota_lib.host~="") then
         -- wifi.sta.connect()
         local boot_file = ota_lib.boot
         unrequire ('ota_lib')
-
+        print('Running ' .. boot_file)
         load_lib(boot_file)
     else
         -- feed_update_wdt()

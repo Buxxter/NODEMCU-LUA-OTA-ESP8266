@@ -31,6 +31,7 @@ function module.SaveXY(sErr)
     if (sErr) then
         module.err = sErr
     end
+    if module.reboots_to_update < 0 then module.reboots_to_update = 10 end
     file.remove("s.txt")
     file.open("s.txt","w+")
     for k, v in pairs(module) do

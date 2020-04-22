@@ -1,18 +1,5 @@
--- save config file
-function SaveX(vars)
-    file.remove("s.txt")
-    file.open("s.txt","w+")
-    for k, v in pairs(s) do
-        file.writeline(k .. "=" .. v)
-    end                
-    file.close()
-    collectgarbage()
-    node.restart()
-end
-
-
 print(collectgarbage("count").." kB used")
-LoadX()
+local ota_lib = require('ota_lib')
 
 wifi.setmode(wifi.SOFTAP)
 cfg = {}
@@ -43,10 +30,10 @@ srv:listen(80, function(conn)
     print ("|"..vars.."|")
     if (vars~=nil and vars~="") then
             for k, v in string.gmatch(vars, "(%w+)=([^&]*)&*") do
-                s[k],n = string.gsub(v,"%%2F","/")
+                ota_lib[k],n = string.gsub(v,"%%2F","/")
                 print(k .. " = " .. s[k])
             end
-        SaveX()
+        ota_lib.saveXY()
     end
     if url == "favicon.ico" then
       conn:send("HTTP/1.1 404 file not found")
