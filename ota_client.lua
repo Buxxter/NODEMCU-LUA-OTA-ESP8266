@@ -1,3 +1,4 @@
+local ota_lib = require('ota_lib')
 
 function write(str)
     uart.write(0, str)
@@ -20,9 +21,10 @@ function update_state()
     write("Sending updated state...")
     conn=net.createConnection(net.TCP, 0)
     conn:on("connection",function(conn, payload)
-    conn:send("GET /"..s.path.."/node.php?id="..id.."&update=1"..
+    conn:send("GET /"..ota_lib.path.."/node.php?id="..node.chipid().."&update=1"..
                 " HTTP/1.1\r\n".. 
-                "Host: "..s.domain.."\r\n"..
+                "Host: "..ota_lib.domain.."\r\n"..
+                "Connection: close\r\n"..
                 "Accept: */*\r\n"..
                 "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua;)"..
                 "\r\n\r\n") 
@@ -30,12 +32,12 @@ function update_state()
 
     conn:on("receive", function(conn, payload)
         print("Done")
-        SaveXY("No error")
-        print("All files saved\nBootfile: " .. s.boot .. "\nReboot")
+        ota_lib.SaveXY("No error")
+        print("All files saved\nBootfile: " .. ota_lib.boot .. "\nReboot")
         collectgarbage()
         node.restart()
     end)
-    conn:connect(80,s.host)
+    conn:connect(80,ota_lib.host)
 end
 
 function dwn()
@@ -43,7 +45,7 @@ function dwn()
     files_counter = files_counter + 1
     if data[files_counter] == nil then
         bootfile = string.gsub(data[1], '\.lua$', '')
-        s.boot = bootfile --..".lc"
+        ota_lib.boot = bootfile --..".lc"
         tmr_get_file:unregister()
         update_state()
         return
@@ -95,8 +97,8 @@ function dwn()
     end)
     
     conn:on("connection", function(conn)
-        conn:send("GET /" .. s.path .. "/uploads/" .. id .. "/" .. filename .. " HTTP/1.0\r\n" ..
-                "Host: " .. s.host .. "\r\n" ..
+        conn:send("GET /" .. ota_lib.path .. "/uploads/" .. node.chipid() .. "/" .. filename .. " HTTP/1.0\r\n" ..
+                "Host: " .. ota_lib.host .. "\r\n" ..
                 "Connection: close\r\n" ..
                 "Accept-Charset: utf-8\r\n" ..
                 "Accept-Encoding: \r\n" ..
@@ -104,7 +106,7 @@ function dwn()
                 "Accept: */*\r\n\r\n")
     end)
     
-    conn:connect(80, s.host)
+    conn:connect(80, ota_lib.host)
 
 end
 
@@ -141,20 +143,12 @@ function FileList(sck, c)
 end
 
 print("fetch lua..")
+
 data = {}
 filename = nil
 files_counter = 0
-LoadX()
 
-wifi.setmode(wifi.STATION)
-wifi_config =   {   
-                    ssid = s.ssid, 
-                    pwd = s.pwd, 
-                    auto = true, 
-                    save = false,
-                }
-wifi.sta.config(wifi_config)
-wifi.sta.connect()
+ota_lib.wifi_connect()
 
 iFail = 12 -- trying to connect to AP in 60sec, if not then reboot
 tmr_waif_for_connect = tmr.create()
@@ -162,12 +156,12 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
   iFail = iFail - 1
   print(iFail)
   if (iFail == 0) then
-    SaveXY("could not access " .. s.ssid)
+    ota_lib.SaveXY("could not access " .. ota_lib.ssid)
     node.restart()
   end
 
   if wifi.sta.getip() == nil then
-    print(s.ssid.. ": " .. iFail)
+    print(ota_lib.ssid.. ": " .. iFail)
   else
     print("ip: " .. wifi.sta.getip())
     tmr_waif_for_connect:unregister()
@@ -176,9 +170,10 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
     sk = net.createConnection()
     
     sk:on("connection",function(conn, payload)
-                sk:send("GET /" .. s.path .. "/node.php?id=" .. id .. "&list" ..
+                sk:send("GET /" .. ota_lib.path .. "/node.php?id=" .. node.chipid() .. "&list" ..
                 " HTTP/1.1\r\n".. 
-                "Host: ".. s.domain .. "\r\n" ..
+                "Host: ".. ota_lib.domain .. "\r\n" ..
+                "Connection: close\r\n"..
                 "Accept: */*\r\n" ..
                 "User-Agent: Mozilla/4.0 (compatible; esp8266 Lua;)" ..
                 "\r\n\r\n")
@@ -186,10 +181,10 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
     sk:on("receive", FileList)
 
     sk:on("reconnection", function (conn, err_code)
-        print("Error (" .. err_code .. ") connecting " .. s.host)
+        print("Error (" .. err_code .. ") connecting " .. ota_lib.host)
         iFail = iFail - 1
         if (iFail == 0) then
-            SaveXY("connection error (code " .. err_code .. ")")
+            ota_lib.SaveXY("connection error (code " .. err_code .. ")")
             node.restart()
           end
         return
@@ -201,12 +196,11 @@ tmr_waif_for_connect:alarm(5000, tmr.ALARM_AUTO, function()
 
     iFail = 12
     --sGet = "GET /".. s.path .. " HTTP/1.1\r\nHost: " .. s.domain .. "\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n"
-    sk:connect(80, s.host)
+    sk:connect(80, ota_lib.host)
     
   end
   collectgarbage()
  
 end)
-
 
 print(collectgarbage("count") .. " kB used")
